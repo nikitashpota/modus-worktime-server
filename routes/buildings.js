@@ -87,6 +87,27 @@ router.get("/", async (req, res) => {
   }
 });
 
+// В вашем router файле
+router.put("/:id", async (req, res) => {
+  const { id } = req.params;
+  const { number, name, description } = req.body;
+  try {
+    const building = await Building.findByPk(id);
+    if (building) {
+      building.number = number;
+      building.name = name;
+      building.description = description;
+      await building.save();
+      res.json(building);
+    } else {
+      res.status(404).send("Здание не найдено");
+    }
+  } catch (error) {
+    console.error("Ошибка при обновлении здания:", error);
+    res.status(500).send("Ошибка на сервере");
+  }
+});
+
 router.get("/:buildingId/assigned-users", async (req, res) => {
   const { buildingId } = req.params;
 
