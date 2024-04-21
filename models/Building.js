@@ -1,10 +1,9 @@
 const { DataTypes } = require("sequelize");
-const sequelize = require("../config/database"); // Убедитесь, что путь к файлу конфигурации корректен
+const sequelize = require("../config/database");
 
 const Building = sequelize.define(
   "Building",
   {
-    // Атрибуты модели здания
     number: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -14,14 +13,93 @@ const Building = sequelize.define(
       allowNull: false,
     },
     description: {
-      type: DataTypes.TEXT, // Используйте TEXT для более длинного текста
-      allowNull: true, // Сделаем описание необязательным
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    landArea: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
+    maxDensity: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
+    maxHeight: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
+    totalFloorArea: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
+    buildingArea: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
+    undergroundParkingSpaces: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    undergroundParkingArea: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+    },
+    estimatedPopulation: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    functionalPurpose: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    approvingAuthority: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    // Добавлены поля для последнего пользователя, изменившего каждый показатель
+    landAreaLastModifiedBy: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    maxDensityLastModifiedBy: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    maxHeightLastModifiedBy: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    totalFloorAreaLastModifiedBy: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    buildingAreaLastModifiedBy: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    undergroundParkingSpacesLastModifiedBy: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    undergroundParkingAreaLastModifiedBy: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    estimatedPopulationLastModifiedBy: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    functionalPurposeLastModifiedBy: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    approvingAuthorityLastModifiedBy: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
     },
   },
   {
-    // Настройки модели
-    timestamps: true, // Если вам нужны поля createdAt и updatedAt
-    // Другие настройки по желанию
+    timestamps: true,
   }
 );
 

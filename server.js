@@ -1,19 +1,16 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const User = require("./models/User"); // Подключаем модель пользователя
+const User = require("./models/User");
 const Building = require("./models/Building");
 const UserBuilding = require("./models/UserBuilding");
 const buildingsRouter = require("./routes/buildings");
 const userRoutes = require("./routes/users");
 const userBuildingsRouter = require("./routes/userBuildings");
 const workTimeLogsRouter = require("./routes/workTimeLogs");
-// const bcrypt = require("bcryptjs"); // Для хеширования паролей
-// const saltRounds = 10;
+const sectionsRouter = require("./routes/sections");
 
 const sequelize = require("./config/database");
-// const { Op } = require("sequelize");
 const cors = require("cors");
-// const jwt = require("jsonwebtoken");
 
 const app = express();
 app.use(express.json());
@@ -23,11 +20,7 @@ app.use(bodyParser.json());
 app.use(cors());
 
 app.use(cors());
-app.use(bodyParser.json());
 app.use(express.json());
-
-// Синхронизация с базой данных
-sequelize.sync().then(() => console.log("DB is ready"));
 
 User.belongsToMany(Building, {
   through: UserBuilding,
@@ -61,7 +54,7 @@ app.use("/users", userRoutes);
 app.use("/buildings", buildingsRouter);
 app.use("/userBuildings", userBuildingsRouter);
 app.use("/workTimeLogs", workTimeLogsRouter);
-// app.listen(port, () => console.log(`Server running on port ${port}`));
+app.use("/sections", sectionsRouter);
 
 sequelize
   .sync({ alter: true })

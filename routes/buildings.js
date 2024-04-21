@@ -26,7 +26,6 @@ router.post("/assign-user", async (req, res) => {
   const { userId, buildingId } = req.body;
 
   try {
-    // Проверяем, не назначен ли уже пользователь этому зданию
     const existingAssignment = await UserBuilding.findOne({
       where: { userId, buildingId },
     });
@@ -90,21 +89,34 @@ router.get("/", async (req, res) => {
 // В вашем router файле
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const { number, name, description } = req.body;
+  const userId = req.body.userId;
+  const updates = req.body;
+
   try {
     const building = await Building.findByPk(id);
     if (building) {
-      building.number = number;
-      building.name = name;
-      building.description = description;
+      Object.keys(updates).forEach((key) => {
+        if (key !== "userId") {
+          // Исключаем поле userId из обработки как параметр обновления
+          building[key] = updates[key];
+          if (!["number", "name", "description"].includes(key)) {
+            // Проверяем, не является ли поле одним из основных, которые не требуют отслеживания изменений
+            building[`${key}LastModifiedBy`] = userId; // Устанавливаем пользователя, который вносил изменение
+          }
+        }
+      });
       await building.save();
-      res.json(building);
+      res.json({
+        success: true,
+        message: "Здание успешно обновлено",
+        building: building,
+      });
     } else {
-      res.status(404).send("Здание не найдено");
+      res.status(404).send({ success: false, message: "Здание не найдено" });
     }
   } catch (error) {
     console.error("Ошибка при обновлении здания:", error);
-    res.status(500).send("Ошибка на сервере");
+    res.status(500).send({ success: false, message: "Ошибка на сервере" });
   }
 });
 
