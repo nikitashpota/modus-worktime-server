@@ -27,7 +27,6 @@ UserBuilding.init(
     sequelize,
     modelName: "UserBuilding",
     timestamps: true, // Если вы хотите иметь поля createdAt и updatedAt
-
   }
 );
 

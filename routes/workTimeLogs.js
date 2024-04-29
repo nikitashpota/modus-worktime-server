@@ -26,7 +26,6 @@ router.get("/", async (req, res) => {
 // Получение списка зданий для пользователя
 router.get("/:userId", async (req, res) => {
   const { userId } = req.params;
-
   try {
     const workTimeLogs = await WorkTimeLog.findAll({
       where: { userId: userId },
@@ -68,34 +67,16 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
+// Получение логов работы по пользователю и разделу
 router.get("/logs", async (req, res) => {
+  const { userId, sectionId, date } = req.query;
+  let whereClause = { userId, sectionId };
+  if (date) whereClause.date = date;
+
   try {
-    // Извлекаем параметры из строки запроса
-    const { userId, buildingId, date } = req.query;
-
-    // Создаем объект, в котором будем хранить условия для поиска
-    let whereClause = {};
-
-    if (userId) {
-      whereClause.userId = userId;
-    }
-
-    if (buildingId) {
-      whereClause.buildingId = buildingId;
-    }
-
-    if (date) {
-      whereClause.date = date;
-    }
-
-    const workTimeLogs = await WorkTimeLog.findAll({
-      where: whereClause,
-    });
-
+    const workTimeLogs = await WorkTimeLog.findAll({ where: whereClause });
     res.json(workTimeLogs);
   } catch (error) {
-    console.error("Ошибка при получении логов работы:", error);
     res.status(500).json({ error: error.message });
   }
 });

@@ -1,6 +1,6 @@
 const { Model, DataTypes } = require("sequelize");
-const sequelize = require("../config/database"); // Убедитесь, что путь к вашему файлу конфигурации базы данных корректен
-
+const sequelize = require("../config/database");
+const ProjectSection = require("./ProjectSection");
 class WorkTimeLog extends Model {}
 
 WorkTimeLog.init(
@@ -9,7 +9,7 @@ WorkTimeLog.init(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "Users", // Указываем имя таблицы, на которую ссылается этот ключ
+        model: "Users", 
         key: "id",
       },
     },
@@ -17,21 +17,29 @@ WorkTimeLog.init(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "Buildings", // Указываем имя таблицы, на которую ссылается этот ключ
+        model: "Buildings",
+        key: "id",
+      },
+    },
+    sectionId: { // Новое поле для связи с разделами
+      type: DataTypes.INTEGER,
+      allowNull: false, // Раздел может быть не указан для некоторых записей
+      references: {
+        model: "ProjectSections", // Убедитесь, что имя модели правильное
         key: "id",
       },
     },
     date: {
-      type: DataTypes.DATEONLY, // Только дата без времени
+      type: DataTypes.DATEONLY, 
       allowNull: false,
     },
     hours: {
-      type: DataTypes.DECIMAL(5, 2), // Позволяет хранить часы с точностью до минут, например, 8.5 часов
+      type: DataTypes.DECIMAL(5, 2), 
       allowNull: false,
     },
     workType: {
-      type: DataTypes.STRING, // Тип данных - строка
-      allowNull: false, // Поле обязательно к заполнению
+      type: DataTypes.STRING,
+      allowNull: false,
     },
   },
   {

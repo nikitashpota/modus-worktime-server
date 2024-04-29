@@ -2,9 +2,12 @@
 const express = require("express");
 const router = express.Router();
 const ProjectSection = require("../models/ProjectSection");
+const UserSection = require("../models/UserSection");
+const User = require("../models/User");
+const Building = require("../models/Building");
 
 // Получение разделов по стадии и зданию
-router.get("/", async (req, res) => {
+router.get("/by-stage-building", async (req, res) => {
   try {
     const { stage, buildingId } = req.query;
     const sections = await ProjectSection.findAll({
@@ -13,6 +16,41 @@ router.get("/", async (req, res) => {
     res.json(sections);
   } catch (error) {
     res.status(500).send(error.toString());
+  }
+});
+
+router.get("/", async (req, res) => {
+  try {
+    const sections = await ProjectSection.findAll();
+    res.json(sections);
+  } catch (error) {
+    res.status(500).send(error.toString());
+  }
+});
+
+// Получение разделов по ID пользователя
+router.get("/by-user/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const userSections = await UserSection.findAll({
+      where: { userId },
+      include: [
+        {
+          model: ProjectSection,
+          as: "section",
+          include: [
+            {
+              model: Building,
+              as: "building",
+            },
+          ],
+        },
+      ],
+    });
+    res.json(userSections);
+  } catch (error) {
+    console.error("Ошибка при получении разделов по пользователю:", error);
+    res.status(500).send("Внутренняя ошибка сервера");
   }
 });
 
@@ -38,10 +76,7 @@ router.post("/", async (req, res) => {
 router.post("/loadTemplate", async (req, res) => {
   const { stage, buildingId, sections } = req.body;
   try {
-    // Удалить существующие разделы для данного здания и стадии
     await ProjectSection.destroy({ where: { stage, buildingId } });
-
-    // Добавить новые разделы из шаблона
     for (let section of sections) {
       await ProjectSection.create({ ...section, stage, buildingId });
     }
@@ -64,6 +99,75 @@ router.put("/:id", async (req, res) => {
   } catch (error) {
     console.error("Ошибка сервера:", error);
     res.status(500).send("Ошибка сервера");
+  }
+});
+
+// Получение пользователей, назначенных на раздел
+router.get("/:sectionId/assigned-users", async (req, res) => {
+  try {
+    const { sectionId } = req.params;
+    const assignedUsers = await UserSection.findAll({
+      where: { sectionId },
+      include: [{ model: User, as: "user" }],
+    });
+    res.json(assignedUsers.map((au) => au.user));
+  } catch (error) {
+    console.error("Ошибка при получении назначенных пользователей:", error);
+    res
+      .status(500)
+      .send("Ошибка сервера при получении назначенных пользователей");
+  }
+});
+
+// Назначение пользователя к разделу
+router.post("/assign-user", async (req, res) => {
+  const { userId, sectionId } = req.body;
+  try {
+    const existingAssignment = await UserSection.findOne({
+      where: { userId, sectionId },
+    });
+
+    if (existingAssignment) {
+      return res
+        .status(400)
+        .json({ message: "Пользователь уже назначен этому разделу" });
+    }
+
+    const assignment = await UserSection.create({ userId, sectionId });
+    res
+      .status(201)
+      .json({ message: "Пользователь успешно назначен разделу", assignment });
+  } catch (error) {
+    console.error("Ошибка при назначении пользователя разделу:", error);
+    res.status(500).send("Ошибка сервера при назначении пользователя разделу");
+  }
+});
+
+// Отмена назначения пользователя от раздела
+router.post("/unassign-user", async (req, res) => {
+  const { userId, sectionId } = req.body;
+
+  try {
+    const existingAssignment = await UserSection.findOne({
+      where: { userId, sectionId },
+    });
+
+    if (!existingAssignment) {
+      return res
+        .status(404)
+        .json({ message: "Назначение пользователя на раздел не найдено" });
+    }
+
+    await existingAssignment.destroy();
+    res.json({ message: "Назначение пользователя на раздел удалено" });
+  } catch (error) {
+    console.error(
+      "Ошибка при удалении назначения пользователя на раздел:",
+      error
+    );
+    res.status(500).json({
+      message: "Ошибка сервера при удалении назначения пользователя на раздел",
+    });
   }
 });
 

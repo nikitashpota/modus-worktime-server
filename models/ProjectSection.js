@@ -25,9 +25,6 @@ ProjectSection.init(
     stage: {
       type: DataTypes.STRING,
       allowNull: false,
-      validate: {
-        isIn: [["PD", "WD"]],
-      },
     },
     startDate: {
       type: DataTypes.DATEONLY,
