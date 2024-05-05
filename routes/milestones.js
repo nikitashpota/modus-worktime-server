@@ -16,28 +16,36 @@ router.get("/:buildingId", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { buildingId, name, code, date } = req.body;
+    const { buildingId, name, code, date, updatedDate } = req.body;
     if (!buildingId) {
       return res.status(400).send("Building ID is required");
     }
-    const milestone = await Milestone.create({ buildingId, name, code, date });
+    const milestone = await Milestone.create({
+      buildingId,
+      name,
+      code,
+      date,
+      updatedDate,
+    });
     res.status(201).json(milestone);
   } catch (error) {
     res.status(400).send(error.message);
   }
 });
 
-// Обновление вехи
 router.put("/:id", async (req, res) => {
   try {
     const { id } = req.params;
+    const updateFields = req.body; 
     const milestone = await Milestone.findByPk(id);
     if (!milestone) {
       return res.status(404).send("Milestone not found");
     }
-    await milestone.update(req.body);
+
+    await milestone.update(updateFields);
     res.json(milestone);
   } catch (error) {
+    console.error("Error updating milestone:", error);
     res.status(400).send(error.message);
   }
 });

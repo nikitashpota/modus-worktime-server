@@ -1,6 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const User = require("../models/User"); // Подключаем модель пользователя
+const Building = require("../models/Building"); // Подключаем модель пользователя
 const { Op } = require("sequelize");
 const jwt = require("jsonwebtoken");
 const saltRounds = 10;
@@ -25,6 +26,35 @@ router.get("/", async (req, res) => {
   } catch (error) {
     console.error("Ошибка при получении списка пользователей:", error);
     res.status(500).send("Ошибка сервера при получении списка пользователей");
+  }
+});
+
+// Получение всех пользователей, связанных с определенным зданием
+router.get("/building/:buildingId", async (req, res) => {
+  try {
+    const { buildingId } = req.params;
+    const users = await User.findAll({
+      include: [
+        {
+          model: Building, // Замените на вашу модель, если это необходимо
+          where: { id: buildingId },
+          through: { attributes: [] }, // Для промежуточной таблицы, если есть
+        },
+      ],
+      attributes: [
+        "id",
+        "username",
+        "firstName",
+        "lastName",
+        "email",
+        "role",
+        "department",
+      ],
+    });
+    res.json(users);
+  } catch (error) {
+    console.error("Ошибка при получении пользователей здания:", error);
+    res.status(500).send("Ошибка сервера при получении пользователей здания");
   }
 });
 

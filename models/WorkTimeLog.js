@@ -1,6 +1,6 @@
 const { Model, DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
-const ProjectSection = require("./ProjectSection");
+const Section = require("./Section");
 class WorkTimeLog extends Model {}
 
 WorkTimeLog.init(
@@ -25,7 +25,7 @@ WorkTimeLog.init(
       type: DataTypes.INTEGER,
       allowNull: false, // Раздел может быть не указан для некоторых записей
       references: {
-        model: "ProjectSections", // Убедитесь, что имя модели правильное
+        model: "Sections", // Убедитесь, что имя модели правильное
         key: "id",
       },
     },

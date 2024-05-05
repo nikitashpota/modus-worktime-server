@@ -1,8 +1,9 @@
 // server/routes/sections.js
 const express = require("express");
 const router = express.Router();
-const ProjectSection = require("../models/ProjectSection");
+const Section = require("../models/Section");
 const UserSection = require("../models/UserSection");
+const UserBuilding = require("../models/UserBuilding");
 const User = require("../models/User");
 const Building = require("../models/Building");
 
@@ -10,7 +11,7 @@ const Building = require("../models/Building");
 router.get("/by-stage-building", async (req, res) => {
   try {
     const { stage, buildingId } = req.query;
-    const sections = await ProjectSection.findAll({
+    const sections = await Section.findAll({
       where: { stage, buildingId },
     });
     res.json(sections);
@@ -21,7 +22,7 @@ router.get("/by-stage-building", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const sections = await ProjectSection.findAll();
+    const sections = await Section.findAll();
     res.json(sections);
   } catch (error) {
     res.status(500).send(error.toString());
@@ -36,7 +37,7 @@ router.get("/by-user/:userId", async (req, res) => {
       where: { userId },
       include: [
         {
-          model: ProjectSection,
+          model: Section,
           as: "section",
           include: [
             {
@@ -59,7 +60,7 @@ router.post("/", async (req, res) => {
   try {
     const { sectionCode, sectionName, startDate, endDate, stage, buildingId } =
       req.body;
-    const section = await ProjectSection.create({
+    const section = await Section.create({
       sectionCode,
       sectionName,
       startDate,
@@ -76,9 +77,9 @@ router.post("/", async (req, res) => {
 router.post("/loadTemplate", async (req, res) => {
   const { stage, buildingId, sections } = req.body;
   try {
-    await ProjectSection.destroy({ where: { stage, buildingId } });
+    await Section.destroy({ where: { stage, buildingId } });
     for (let section of sections) {
-      await ProjectSection.create({ ...section, stage, buildingId });
+      await Section.create({ ...section, stage, buildingId });
     }
 
     res.send("Шаблон успешно загружен и разделы обновлены");
@@ -89,7 +90,7 @@ router.post("/loadTemplate", async (req, res) => {
 
 router.put("/:id", async (req, res) => {
   try {
-    const section = await ProjectSection.findByPk(req.params.id);
+    const section = await Section.findByPk(req.params.id);
     if (!section) {
       return res.status(404).send("Раздел не найден");
     }
@@ -122,6 +123,7 @@ router.get("/:sectionId/assigned-users", async (req, res) => {
 // Назначение пользователя к разделу
 router.post("/assign-user", async (req, res) => {
   const { userId, sectionId } = req.body;
+
   try {
     const existingAssignment = await UserSection.findOne({
       where: { userId, sectionId },
@@ -133,7 +135,25 @@ router.post("/assign-user", async (req, res) => {
         .json({ message: "Пользователь уже назначен этому разделу" });
     }
 
+    // Получение buildingId из Section
+    const section = await Section.findByPk(sectionId);
+    if (!section) {
+      return res.status(404).json({ message: "Раздел не найден" });
+    }
+    const { buildingId } = section;
+
+    // Назначение пользователя разделу
     const assignment = await UserSection.create({ userId, sectionId });
+
+    // Проверка и создание связи с зданием, если нужно
+    const existingBuildingAssignment = await UserBuilding.findOne({
+      where: { userId, buildingId },
+    });
+
+    if (!existingBuildingAssignment) {
+      await UserBuilding.create({ userId, buildingId });
+    }
+
     res
       .status(201)
       .json({ message: "Пользователь успешно назначен разделу", assignment });
@@ -174,7 +194,7 @@ router.post("/unassign-user", async (req, res) => {
 // Удаление раздела
 router.delete("/:id", async (req, res) => {
   try {
-    const result = await ProjectSection.destroy({
+    const result = await Section.destroy({
       where: { id: req.params.id },
     });
     if (result) {

@@ -1,10 +1,10 @@
-// models/ProjectSection.js
+// models/Section.js
 const { Model, DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 
-class ProjectSection extends Model {}
+class Section extends Model {}
 
-ProjectSection.init(
+Section.init(
   {
     buildingId: {
       type: DataTypes.INTEGER,
@@ -37,9 +37,9 @@ ProjectSection.init(
   },
   {
     sequelize,
-    modelName: "ProjectSection",
+    modelName: "Section",
     timestamps: true, // Отметки времени для автоматического создания полей createdAt и updatedAt
   }
 );
 
-module.exports = ProjectSection;
+module.exports = Section;

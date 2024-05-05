@@ -1,5 +1,6 @@
 const express = require("express");
 const WorkTimeLog = require("../models/WorkTimeLog"); // Предполагается, что модель уже модифицирована
+const User = require("../models/User"); // Предполагается, что модель уже модифицирована
 
 const router = express.Router();
 
@@ -19,6 +20,36 @@ router.get("/", async (req, res) => {
     const workTimeLogs = await WorkTimeLog.findAll();
     res.json(workTimeLogs);
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get("/building/:buildingId", async (req, res) => {
+  try {
+    const { buildingId } = req.params;
+    const userIds = req.query.users
+      ? req.query.users.split(",").map((id) => parseInt(id))
+      : [];
+
+    const whereClause = {
+      buildingId: buildingId,
+    };
+    if (userIds.length > 0) {
+      whereClause.userId = userIds;
+    }
+
+    const workTimeLogs = await WorkTimeLog.findAll({
+      where: whereClause,
+      include: [
+        {
+          model: User,
+          attributes: ["id", "firstName", "lastName"],
+        },
+      ],
+    });
+    res.json(workTimeLogs);
+  } catch (error) {
+    console.error("Ошибка при получении журналов времени:", error);
     res.status(500).json({ error: error.message });
   }
 });

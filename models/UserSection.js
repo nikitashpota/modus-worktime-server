@@ -17,7 +17,7 @@ UserSection.init(
     sectionId: {
       type: DataTypes.INTEGER,
       references: {
-        model: "ProjectSection", // Это должна быть ваша модель для разделов
+        model: "Section", // Это должна быть ваша модель для разделов
         key: "id",
       },
       allowNull: false,

@@ -1,9 +1,14 @@
 const express = require("express");
 const Building = require("../models/Building");
+const Milestone = require("../models/Milestone");
+const Section = require("../models/Section");
+const WorkTimeLog = require("../models/WorkTimeLog");
 const UserBuilding = require("../models/UserBuilding");
+const UserSection = require("../models/UserSection");
 const User = require("../models/User");
-
+const sequelize = require("../config/database");
 const router = express.Router();
+const { Op } = require("sequelize");
 
 router.post("/", async (req, res) => {
   console.log(req.body);
@@ -117,41 +122,45 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// router.get("/:buildingId/assigned-users", async (req, res) => {
-//   const { buildingId } = req.params;
+// Маршрут для удаления здания и всех связанных данных
+router.delete("/:buildingId", async (req, res) => {
+  const { buildingId } = req.params;
 
-//   try {
-//     const assignedUsers = await UserBuilding.findAll({
-//       where: { buildingId },
-//       include: [{ model: User, as: "user" }],
-//     });
+  if (!buildingId) {
+    return res.status(400).json({ error: "Building ID is required" });
+  }
 
-//     res.json(assignedUsers.map((assignment) => assignment.user));
-//   } catch (error) {
-//     console.error("Ошибка при получении назначенных пользователей:", error);
-//     res.status(500).json({
-//       message: "Ошибка сервера при получении списка назначенных пользователей",
-//     });
-//   }
-// });
-
-router.delete("/:id", async (req, res) => {
-  const { id } = req.params;
   try {
-    await UserBuilding.destroy({
-      where: { buildingId: id },
+    await sequelize.transaction(async (t) => {
+      // Удаление зависимых данных, порядок важен!
+      await UserSection.destroy({
+        where: {
+          sectionId: {
+            [Op.in]: sequelize.literal(
+              `(SELECT id FROM Sections WHERE buildingId = ${buildingId})`
+            ),
+          },
+        },
+        transaction: t,
+      });
+ 
+      await UserBuilding.destroy({ where: { buildingId }, transaction: t });
+      await WorkTimeLog.destroy({ where: { buildingId }, transaction: t });
+      await Section.destroy({ where: { buildingId }, transaction: t });
+      await Milestone.destroy({ where: { buildingId }, transaction: t });
+
+      // Удаление самого здания
+      await Building.destroy({ where: { id: buildingId }, transaction: t });
+
+      res.json({
+        message: "Building and related records have been deleted successfully.",
+      });
     });
-
-    const building = await Building.findByPk(id);
-    if (!building) {
-      return res.status(404).json({ message: "Здание не найдено." });
-    }
-
-    await building.destroy();
-    res.status(200).json({ message: "Здание удалено." });
   } catch (error) {
-    console.error("Ошибка при удалении здания:", error);
-    res.status(500).json({ message: "Ошибка при удалении здания." });
+    console.error("Failed to delete building and related records:", error);
+    res
+      .status(500)
+      .json({ error: "Failed to delete building and related records" });
   }
 });
 
