@@ -13,6 +13,7 @@ const userBuildingsRouter = require("./routes/userBuildings");
 const workTimeLogsRouter = require("./routes/workTimeLogs");
 const sectionsRouter = require("./routes/sections");
 const milestonesRouter = require("./routes/milestones");
+const subcontractorsRouter = require("./routes/subcontractors");
 const setupModelAssociations = require("./associations");
 const sequelize = require("./config/database");
 const cors = require("cors");
@@ -37,6 +38,7 @@ app.use("/userBuildings", userBuildingsRouter);
 app.use("/workTimeLogs", workTimeLogsRouter);
 app.use("/sections", sectionsRouter);
 app.use("/milestones", milestonesRouter);
+app.use("/subcontractors", subcontractorsRouter);
 
 sequelize
   .sync({ alter: true })

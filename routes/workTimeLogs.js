@@ -24,6 +24,22 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Получение всех записей
+router.get("/get-building-logs/:buildingId", async (req, res) => {
+  try {
+    const { buildingId } = req.params;
+    const whereClause = {
+      buildingId: buildingId,
+    };
+    const workTimeLogs = await WorkTimeLog.findAll({
+      where: whereClause,
+    });
+    res.json(workTimeLogs);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.get("/building/:buildingId", async (req, res) => {
   try {
     const { buildingId } = req.params;
@@ -98,6 +114,7 @@ router.delete("/:id", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 // Получение логов работы по пользователю и разделу
 router.get("/logs", async (req, res) => {
   const { userId, sectionId, date } = req.query;

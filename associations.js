@@ -5,8 +5,22 @@ const UserSection = require("./models/UserSection");
 const Section = require("./models/Section");
 const WorkTimeLog = require("./models/WorkTimeLog");
 const Milestone = require("./models/Milestone");
+const Subcontractor = require("./models/Subcontractor");
+const SectionSubcontractor = require("./models/SectionSubcontractor");
 
 module.exports = function setupModelAssociations() {
+
+
+  Subcontractor.hasMany(SectionSubcontractor, {
+    foreignKey: "subcontractorId",
+    as: "SectionSubcontractors",
+  });
+
+  SectionSubcontractor.belongsTo(Subcontractor, {
+    foreignKey: "subcontractorId",
+    as: "Subcontractor",
+  });
+
   User.belongsToMany(Building, {
     through: UserBuilding,
     foreignKey: "userId",

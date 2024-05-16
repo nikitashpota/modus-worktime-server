@@ -20,6 +20,7 @@ router.get("/", async (req, res) => {
         "lastName",
         "department",
         "role",
+        "salary",
       ], // Выбор нужных полей
     });
     res.json(users);
@@ -152,7 +153,8 @@ router.get("/user/:userId", async (req, res) => {
 
 router.put("/user/:userId", async (req, res) => {
   const { userId } = req.params;
-  const { firstName, lastName, email, department } = req.body;
+  const { firstName, lastName, email, department, role, salary, username } =
+    req.body;
 
   try {
     const user = await User.findOne({ where: { id: userId } });
@@ -167,10 +169,24 @@ router.put("/user/:userId", async (req, res) => {
       lastName,
       email,
       department,
-      // Дополните другими полями, если необходимо
+      role,
+      salary,
+      username,
     });
 
-    res.json({ message: "Profile updated successfully" });
+    res.json({
+      message: "Profile updated successfully",
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        department: user.department,
+        role: user.role,
+        salary: user.salary,
+      },
+    });
   } catch (error) {
     console.error("Error updating user profile:", error);
     res.status(500).json({ message: "Error updating profile" });

@@ -1,9 +1,21 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
-
+//technicalCustomer initialContractValue  currentContractValue
 const Building = sequelize.define(
   "Building",
   {
+    technicalCustomer: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    initialContractValue: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    currentContractValue: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     number: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -56,7 +68,6 @@ const Building = sequelize.define(
       type: DataTypes.STRING,
       allowNull: true,
     },
-    // Добавлены поля для последнего пользователя, изменившего каждый показатель
     landAreaLastModifiedBy: {
       type: DataTypes.INTEGER,
       allowNull: true,

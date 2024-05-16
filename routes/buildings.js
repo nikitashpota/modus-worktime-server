@@ -5,11 +5,13 @@ const Section = require("../models/Section");
 const WorkTimeLog = require("../models/WorkTimeLog");
 const UserBuilding = require("../models/UserBuilding");
 const UserSection = require("../models/UserSection");
+const Subcontractor = require("../models/Subcontractor");
 const User = require("../models/User");
 const sequelize = require("../config/database");
 const router = express.Router();
 const { Op } = require("sequelize");
 
+// Маршрут для создания ОКС
 router.post("/", async (req, res) => {
   console.log(req.body);
 
@@ -27,60 +29,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-// router.post("/assign-user", async (req, res) => {
-//   const { userId, buildingId } = req.body;
-
-//   try {
-//     const existingAssignment = await UserBuilding.findOne({
-//       where: { userId, buildingId },
-//     });
-
-//     if (existingAssignment) {
-//       return res
-//         .status(400)
-//         .json({ message: "Пользователь уже назначен этому зданию" });
-//     }
-
-//     // Создаем новую связь между пользователем и зданием
-//     const assignment = await UserBuilding.create({ userId, buildingId });
-//     res
-//       .status(201)
-//       .json({ message: "Пользователь успешно назначен зданию", assignment });
-//   } catch (error) {
-//     console.error("Ошибка при назначении пользователя зданию:", error);
-//     res.status(500).send("Ошибка сервера при назначении пользователя зданию");
-//   }
-// });
-
-// router.post("/unassign-user", async (req, res) => {
-//   const { userId, buildingId } = req.body;
-
-//   try {
-//     // Проверяем, существует ли назначение пользователя на это здание
-//     const existingAssignment = await UserBuilding.findOne({
-//       where: { userId, buildingId },
-//     });
-
-//     if (!existingAssignment) {
-//       return res
-//         .status(404)
-//         .json({ message: "Назначение пользователя на здание не найдено" });
-//     }
-
-//     // Удаляем связь между пользователем и зданием
-//     await existingAssignment.destroy();
-//     res.json({ message: "Назначение пользователя на здание удалено" });
-//   } catch (error) {
-//     console.error(
-//       "Ошибка при удалении назначения пользователя на здание:",
-//       error
-//     );
-//     res.status(500).json({
-//       message: "Ошибка сервера при удалении назначения пользователя на здание",
-//     });
-//   }
-// });
-
+// Маршрут для получения всех ОКС
 router.get("/", async (req, res) => {
   try {
     const buildings = await Building.findAll();
@@ -91,6 +40,7 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Маршрут для обновления данных по ОКС
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
   const userId = req.body.userId;
@@ -102,9 +52,9 @@ router.put("/:id", async (req, res) => {
       Object.keys(updates).forEach((key) => {
         if (key !== "userId") {
           building[key] = updates[key];
-          if (!["number", "name", "description"].includes(key)) {
-            building[`${key}LastModifiedBy`] = userId;
-          }
+          // if (!["number", "name", "description"].includes(key)) {
+          //   building[`${key}LastModifiedBy`] = userId;
+          // }
         }
       });
       await building.save();
@@ -122,7 +72,60 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// Маршрут для удаления здания и всех связанных данных
+// Получение данных по buildingId включая пользователей, разделы, вехи и субподрядчиков
+router.get("/:buildingId/complete-info", async (req, res) => {
+  const { buildingId } = req.params;
+
+  if (!buildingId) {
+    return res.status(400).json({ error: "Building ID is required" });
+  }
+
+  try {
+    const data = await sequelize.transaction(async (t) => {
+      // Извлечение секций и назначенных на них пользователей
+      const sections = await Section.findAll({
+        where: { buildingId },
+        include: [
+          {
+            model: User,
+            through: {
+              attributes: [], // Не возвращаем атрибуты из промежуточной таблицы
+            },
+            attributes: ["id", "salary", "department"], // Ограничиваем поля, которые возвращаются для пользователя
+          },
+        ],
+        attributes: ["id", "sectionName"], // Возвращаем только ID и имя секции
+        transaction: t,
+      });
+
+      // Извлечение вех, связанных с зданием
+      const milestones = await Milestone.findAll({
+        where: { buildingId },
+        transaction: t,
+      });
+
+      // Извлечение субподрядчиков, связанных с зданием
+      const subcontractors = await Subcontractor.findAll({
+        where: { buildingId },
+        transaction: t,
+      });
+
+      return { sections, milestones, subcontractors };
+    });
+
+    res.json({
+      message: "Complete building information retrieved successfully.",
+      data: data,
+    });
+  } catch (error) {
+    console.error("Failed to fetch complete building information:", error);
+    res
+      .status(500)
+      .json({ error: "Failed to fetch complete building information" });
+  }
+});
+
+// Маршрут для удаления ОКС и всех связанных данных
 router.delete("/:buildingId", async (req, res) => {
   const { buildingId } = req.params;
 
@@ -143,13 +146,10 @@ router.delete("/:buildingId", async (req, res) => {
         },
         transaction: t,
       });
- 
       await UserBuilding.destroy({ where: { buildingId }, transaction: t });
       await WorkTimeLog.destroy({ where: { buildingId }, transaction: t });
       await Section.destroy({ where: { buildingId }, transaction: t });
       await Milestone.destroy({ where: { buildingId }, transaction: t });
-
-      // Удаление самого здания
       await Building.destroy({ where: { id: buildingId }, transaction: t });
 
       res.json({
@@ -164,7 +164,7 @@ router.delete("/:buildingId", async (req, res) => {
   }
 });
 
-// Маршрут для получения данных о конкретном здании
+// Маршрут для получения данных о конкретном ОКС
 router.get("/:buildingId", async (req, res) => {
   try {
     const { buildingId } = req.params;

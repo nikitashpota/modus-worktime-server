@@ -21,6 +21,10 @@ Milestone.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    initialDate: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+    },
     date: {
       type: DataTypes.DATEONLY,
       allowNull: true,
@@ -37,11 +41,19 @@ Milestone.init(
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    initialDateChangeReason: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
     userResponsibleForChange: {
       type: DataTypes.STRING,
       allowNull: true,
     },
     userResponsibleForUpdate: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    userResponsibleForInitialDate: {
       type: DataTypes.STRING,
       allowNull: true,
     },

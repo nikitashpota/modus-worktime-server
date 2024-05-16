@@ -16,7 +16,7 @@ router.get("/:buildingId", async (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { buildingId, name, code, date, updatedDate } = req.body;
+    const { buildingId, name, code, date, updatedDate, initialDate } = req.body;
     if (!buildingId) {
       return res.status(400).send("Building ID is required");
     }
@@ -26,6 +26,7 @@ router.post("/", async (req, res) => {
       code,
       date,
       updatedDate,
+      initialDate,
     });
     res.status(201).json(milestone);
   } catch (error) {
@@ -36,7 +37,7 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const updateFields = req.body; 
+    const updateFields = req.body;
     const milestone = await Milestone.findByPk(id);
     if (!milestone) {
       return res.status(404).send("Milestone not found");

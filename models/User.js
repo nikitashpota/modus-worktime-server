@@ -34,6 +34,11 @@ const User = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    salary: {
+      type: DataTypes.DECIMAL(10, 2), // Тип данных для хранения денежных сумм
+      allowNull: true, // Можно сделать поле необязательным
+      defaultValue: 0.0, // Значение по умолчанию
+    },
   },
   {
     // Настройки модели
