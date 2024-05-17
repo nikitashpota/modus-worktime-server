@@ -10,7 +10,7 @@ SectionSubcontractor.init(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "sections",
+        model: "Sections",
         key: "id",
       },
     },
@@ -18,7 +18,7 @@ SectionSubcontractor.init(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "subcontractors",
+        model: "Subcontractors",
         key: "id",
       },
     },
