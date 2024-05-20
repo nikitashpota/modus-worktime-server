@@ -1,6 +1,5 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
-//technicalCustomer initialContractValue  currentContractValue
 const Building = sequelize.define(
   "Building",
   {

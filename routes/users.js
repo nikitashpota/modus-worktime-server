@@ -37,9 +37,9 @@ router.get("/building/:buildingId", async (req, res) => {
     const users = await User.findAll({
       include: [
         {
-          model: Building, // Замените на вашу модель, если это необходимо
+          model: Building,
           where: { id: buildingId },
-          through: { attributes: [] }, // Для промежуточной таблицы, если есть
+          through: { attributes: [] }, 
         },
       ],
       attributes: [

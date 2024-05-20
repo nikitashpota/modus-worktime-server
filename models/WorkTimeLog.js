@@ -21,11 +21,11 @@ WorkTimeLog.init(
         key: "id",
       },
     },
-    sectionId: { // Новое поле для связи с разделами
+    sectionId: { 
       type: DataTypes.INTEGER,
-      allowNull: false, // Раздел может быть не указан для некоторых записей
+      allowNull: false, 
       references: {
-        model: "Sections", // Убедитесь, что имя модели правильное
+        model: "Sections",
         key: "id",
       },
     },
