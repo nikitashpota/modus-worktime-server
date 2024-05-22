@@ -1,10 +1,9 @@
 const { DataTypes } = require("sequelize");
-const sequelize = require("../config/database"); // Путь к файлу конфигурации
+const sequelize = require("../config/database");
 
 const User = sequelize.define(
   "User",
   {
-    // Модель пользователя
     username: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -20,7 +19,7 @@ const User = sequelize.define(
     },
     role: {
       type: DataTypes.STRING,
-      defaultValue: "user",
+      defaultValue: "Проектировщик",
     },
     firstName: {
       type: DataTypes.STRING,
@@ -35,9 +34,17 @@ const User = sequelize.define(
       allowNull: false,
     },
     salary: {
-      type: DataTypes.DECIMAL(10, 2), // Тип данных для хранения денежных сумм
-      allowNull: true, // Можно сделать поле необязательным
-      defaultValue: 0.0, // Значение по умолчанию
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: true,
+      defaultValue: 0.0,
+    },
+    resetPasswordToken: {
+      type: DataTypes.STRING,
+      allowNull: true, // Можно установить в null после сброса пароля
+    },
+    resetPasswordExpires: {
+      type: DataTypes.DATE,
+      allowNull: true, // Можно установить в null после сброса пароля
     },
   },
   {

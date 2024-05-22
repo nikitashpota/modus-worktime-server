@@ -1,12 +1,85 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
-const User = require("../models/User"); // Подключаем модель пользователя
-const Building = require("../models/Building"); // Подключаем модель пользователя
+const User = require("../models/User");
+const Building = require("../models/Building");
 const { Op } = require("sequelize");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
 const saltRounds = 10;
-
 const router = express.Router();
+
+router.post("/forgot-password", async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({
+      where: { email: email },
+    });
+
+    if (!user) {
+      return res.status(400).send("Пользователь с таким email не найден.");
+    }
+
+    const token = crypto.randomBytes(20).toString("hex");
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = Date.now() + 3600000; // Токен истекает через 1 час
+    await user.save();
+
+    const transporter = nodemailer.createTransport({
+      host: "smtp.msndr.net",
+      port: 587,
+      secure: false, // true for 465, false for other ports
+      auth: {
+        user: "nikitashpota@ya.ru", // замените на ваш 'email'
+        pass: "343c497ce256bc8fe46a61940dce689d", // API ключ от Brevo
+      },
+    });
+
+    const mailOptions = {
+      to: email,
+      from: "nikitashpota@ya.ru", // должно соответствовать подтвержденному email в Brevo
+      subject: "Сброс пароля",
+      text:
+        `Вы получили это письмо, потому что вы (или кто-то другой) запросили сброс пароля для вашего аккаунта.\n\n` +
+        `Пожалуйста, перейдите по следующей ссылке, или скопируйте ее в адресную строку вашего браузера, чтобы завершить процесс:\n\n` +
+        `${process.env.CLIENT_URL}reset-password/${token}\n\n` +
+        `Если вы не запрашивали это, пожалуйста, проигнорируйте это письмо и ваш пароль останется прежним.\n`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.send("Ссылка для сброса пароля отправлена на указанный email.");
+  } catch (error) {
+    console.error("Ошибка при сбросе пароля:", error);
+    res.status(500).send("Ошибка при отправке письма: " + error.message);
+  }
+});
+
+router.post("/reset-password", async (req, res) => {
+  const { token, password } = req.body;
+  try {
+    const user = await User.findOne({
+      where: {
+        resetPasswordToken: token,
+        resetPasswordExpires: { [Op.gt]: Date.now() } // Используйте Sequelize оператор для сравнения дат
+      }
+    });
+
+    if (!user) {
+      return res.status(400).send("Ссылка для сброса пароля недействительна или устарела.");
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 12); // Хэшируем новый пароль
+    user.password = hashedPassword;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    await user.save();
+
+    res.send("Пароль успешно изменен.");
+  } catch (error) {
+    console.error("Ошибка при сбросе пароля:", error);
+    res.status(500).send("Внутренняя ошибка сервера.");
+  }
+});
 
 // Получение списка всех пользователей
 router.get("/", async (req, res) => {
@@ -39,7 +112,7 @@ router.get("/building/:buildingId", async (req, res) => {
         {
           model: Building,
           where: { id: buildingId },
-          through: { attributes: [] }, 
+          through: { attributes: [] },
         },
       ],
       attributes: [

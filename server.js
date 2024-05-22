@@ -1,12 +1,5 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-// const User = require("./models/User");
-// const Building = require("./models/Building");
-// const UserBuilding = require("./models/UserBuilding");
-// const UserSection = require("./models/UserSection");
-// const Section = require("./models/Section");
-// const WorkTimeLog = require("./models/WorkTimeLog");
-// const Milestone = require("./models/Milestone");
 const buildingsRouter = require("./routes/buildings");
 const userRoutes = require("./routes/users");
 const userBuildingsRouter = require("./routes/userBuildings");
@@ -17,6 +10,8 @@ const subcontractorsRouter = require("./routes/subcontractors");
 const setupModelAssociations = require("./associations");
 const sequelize = require("./config/database");
 const cors = require("cors");
+require('dotenv').config();
+
 
 const app = express();
 app.use(express.json());
