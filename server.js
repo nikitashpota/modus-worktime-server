@@ -10,8 +10,7 @@ const subcontractorsRouter = require("./routes/subcontractors");
 const setupModelAssociations = require("./associations");
 const sequelize = require("./config/database");
 const cors = require("cors");
-require('dotenv').config();
-
+require("dotenv").config();
 
 const app = express();
 app.use(express.json());
@@ -25,7 +24,7 @@ app.use(cors());
 
 app.use(cors());
 app.use(express.json());
-
+app.use("/uploads", express.static("uploads"));
 // Регистрация маршрутов
 app.use("/users", userRoutes);
 app.use("/buildings", buildingsRouter);

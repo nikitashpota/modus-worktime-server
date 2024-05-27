@@ -57,6 +57,19 @@ Milestone.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
+    status: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    documentUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    isCertified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      allowNull: false,
+    },
   },
   {
     sequelize,

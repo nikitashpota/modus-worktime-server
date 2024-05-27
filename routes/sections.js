@@ -73,25 +73,25 @@ router.post("/", async (req, res) => {
     res.status(500).send(error.toString());
   }
 });
-
+// Добавление разделов по шаблону
 router.post("/loadTemplate", async (req, res) => {
   const { stage, buildingId, sections } = req.body;
 
   try {
-    // Удалить связанные записи в usersections
-    const sectionsToDelete = await Section.findAll({
-      where: { stage, buildingId },
-      attributes: ["id"],
-    });
+    // // Удалить связанные записи в usersections
+    // const sectionsToDelete = await Section.findAll({
+    //   where: { stage, buildingId },
+    //   attributes: ["id"],
+    // });
 
-    await UserSection.destroy({
-      where: {
-        sectionId: sectionsToDelete.map((section) => section.id),
-      },
-    });
+    // await UserSection.destroy({
+    //   where: {
+    //     sectionId: sectionsToDelete.map((section) => section.id),
+    //   },
+    // });
 
-    // Теперь можно безопасно удалять разделы
-    await Section.destroy({ where: { stage, buildingId } });
+    // // Теперь можно безопасно удалять разделы
+    // await Section.destroy({ where: { stage, buildingId } });
 
     for (let section of sections) {
       await Section.create({ ...section, stage, buildingId });
