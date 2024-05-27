@@ -107,6 +107,21 @@ const Building = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: true,
     },
+    pirContractValue: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      comment: "Стоимость ПИР по контракту",
+    },
+    pirPostMgeValue: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      comment: "Стоимость ПИР после МГЭ",
+    },
+    costPerSquareMeter: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      comment: "Стоимость объекта за м2",
+    },
   },
   {
     timestamps: true,
