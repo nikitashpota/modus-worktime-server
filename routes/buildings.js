@@ -52,9 +52,6 @@ router.put("/:id", async (req, res) => {
       Object.keys(updates).forEach((key) => {
         if (key !== "userId") {
           building[key] = updates[key];
-          // if (!["number", "name", "description"].includes(key)) {
-          //   building[`${key}LastModifiedBy`] = userId;
-          // }
         }
       });
       await building.save();
