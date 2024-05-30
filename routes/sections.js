@@ -4,6 +4,8 @@ const router = express.Router();
 const Section = require("../models/Section");
 const UserSection = require("../models/UserSection");
 const UserBuilding = require("../models/UserBuilding");
+const SectionSubcontractor = require("../models/SectionSubcontractor");
+
 const User = require("../models/User");
 const Building = require("../models/Building");
 
@@ -209,6 +211,20 @@ router.post("/unassign-user", async (req, res) => {
 // Удаление раздела
 router.delete("/:id", async (req, res) => {
   try {
+    console.log(req.params.id);
+
+    await UserSection.destroy({
+      where: {
+        sectionId: req.params.id,
+      },
+    });
+
+    await SectionSubcontractor.destroy({
+      where: {
+        sectionId: req.params.id,
+      },
+    });
+
     const result = await Section.destroy({
       where: { id: req.params.id },
     });
