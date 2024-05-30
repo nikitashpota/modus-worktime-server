@@ -75,6 +75,7 @@ router.post("/", async (req, res) => {
     res.status(500).send(error.toString());
   }
 });
+
 // Добавление разделов по шаблону
 router.post("/loadTemplate", async (req, res) => {
   const { stage, buildingId, sections } = req.body;
@@ -134,6 +135,20 @@ router.get("/:sectionId/assigned-users", async (req, res) => {
     res
       .status(500)
       .send("Ошибка сервера при получении назначенных пользователей");
+  }
+});
+
+// Route to get the count of assigned users for a section
+router.get("/:sectionId/assigned-users/count", async (req, res) => {
+  try {
+    const { sectionId } = req.params;
+    const userCount = await UserSection.count({
+      where: { sectionId },
+    });
+    res.json({ count: userCount });
+  } catch (error) {
+    console.error("Error getting user count:", error);
+    res.status(500).send("Server error");
   }
 });
 
