@@ -9,6 +9,7 @@ const crypto = require("crypto");
 const saltRounds = 10;
 const router = express.Router();
 
+// Маршрут для сброса пароля
 router.post("/forgot-password", async (req, res) => {
   const { email } = req.body;
   try {
@@ -60,12 +61,14 @@ router.post("/reset-password", async (req, res) => {
     const user = await User.findOne({
       where: {
         resetPasswordToken: token,
-        resetPasswordExpires: { [Op.gt]: Date.now() } // Используйте Sequelize оператор для сравнения дат
-      }
+        resetPasswordExpires: { [Op.gt]: Date.now() }, // Используйте Sequelize оператор для сравнения дат
+      },
     });
 
     if (!user) {
-      return res.status(400).send("Ссылка для сброса пароля недействительна или устарела.");
+      return res
+        .status(400)
+        .send("Ссылка для сброса пароля недействительна или устарела.");
     }
 
     const hashedPassword = await bcrypt.hash(password, 12); // Хэшируем новый пароль
@@ -213,6 +216,7 @@ router.get("/user/:userId", async (req, res) => {
         firstName: user.firstName, // Убедитесь, что эти поля существуют в вашей модели
         lastName: user.lastName,
         department: user.department,
+        role: user.role,
         // Добавьте другие поля, которые хотите вернуть
       });
     } else {

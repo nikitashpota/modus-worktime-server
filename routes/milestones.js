@@ -31,11 +31,17 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 router.post(
-  "/:id/attach-document",
-  upload.single("document"),
+  "/:id/attach-documents",
+  upload.array("documents", 10),
   async (req, res) => {
     const { id } = req.params;
-    const file = req.file;
+    const files = req.files;
+    let existingDocuments = JSON.parse(req.body.existingDocuments || "[]");
+
+    // Обработка путей для единообразия
+    existingDocuments = existingDocuments.map((doc) =>
+      doc.startsWith("uploads/") ? doc : `uploads/${doc}`
+    );
 
     try {
       const milestone = await Milestone.findByPk(id);
@@ -43,23 +49,51 @@ router.post(
         return res.status(404).send("Milestone not found");
       }
 
-      // Удаление старого файла, если он существует
-      if (milestone.documentUrl && fs.existsSync(milestone.documentUrl)) {
-        fs.unlinkSync(milestone.documentUrl);
-      }
-
-      // Сохранение нового URL документа
-      milestone.documentUrl = file.path;
+      // Добавление новых URL к существующим
+      const newUrls = files.map((file) => file.path.replace(/\\/g, "/"));
+      const documentUrls = existingDocuments.concat(newUrls);
+      milestone.documentUrls = JSON.stringify(documentUrls);
       await milestone.save();
 
-      res.send({ documentUrl: milestone.documentUrl });
+      res.send({ documentUrls: milestone.documentUrls });
     } catch (error) {
-      console.error("Error updating document:", error);
+      console.error("Error updating documents:", error);
       res.status(500).send("Server error");
     }
   }
 );
 
+router.post("/:id/remove-document", async (req, res) => {
+  const { id } = req.params;
+  const { fileName } = req.body;
+
+  try {
+    const milestone = await Milestone.findByPk(id);
+    if (!milestone) {
+      return res.status(404).send("Milestone not found");
+    }
+
+    const documentUrls = JSON.parse(milestone.documentUrls || "[]");
+    const filePathIndex = documentUrls.findIndex((url) =>
+      url.includes(fileName)
+    );
+
+    if (filePathIndex > -1) {
+      const filePath = documentUrls[filePathIndex];
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+      documentUrls.splice(filePathIndex, 1);
+      milestone.documentUrls = JSON.stringify(documentUrls);
+      await milestone.save();
+    }
+
+    res.send({ documentUrls: milestone.documentUrls });
+  } catch (error) {
+    console.error("Error removing document:", error);
+    res.status(500).send("Server error");
+  }
+});
 // Получение вех для здания
 router.get("/:buildingId", async (req, res) => {
   try {
@@ -90,26 +124,6 @@ router.patch("/:id/certify", async (req, res) => {
     res.status(500).send("Ошибка сервера: " + error.message);
   }
 });
-
-// // Маршрут для обновления только статуса вехи
-// router.post("/:id/update-status", async (req, res) => {
-//   const { id } = req.params;
-//   const { status } = req.body;
-
-//   try {
-//     const milestone = await Milestone.findByPk(id);
-//     if (!milestone) {
-//       return res.status(404).send("Веха не найдена");
-//     }
-//     milestone.status = status;
-
-//     await milestone.save();
-//     res.send("Статус вехи успешно обновлен");
-//   } catch (error) {
-//     console.error("Ошибка при обновлении статуса вехи:", error);
-//     res.status(500).send("Ошибка сервера: " + error.message);
-//   }
-// });
 
 router.post("/", async (req, res) => {
   try {

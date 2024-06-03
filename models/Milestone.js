@@ -61,9 +61,16 @@ Milestone.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
-    documentUrl: {
-      type: DataTypes.STRING,
+    documentUrls: {
+      type: DataTypes.TEXT,
       allowNull: true,
+      get() {
+        const rawValue = this.getDataValue("documentUrls");
+        return rawValue ? JSON.parse(rawValue) : [];
+      },
+      set(value) {
+        this.setDataValue("documentUrls", JSON.stringify(value));
+      },
     },
     isCertified: {
       type: DataTypes.BOOLEAN,
