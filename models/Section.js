@@ -1,4 +1,3 @@
-// models/Section.js
 const { Model, DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 
@@ -33,6 +32,11 @@ Section.init(
     endDate: {
       type: DataTypes.DATEONLY,
       allowNull: true,
+    },
+    modifications: {
+      type: DataTypes.JSON, // Используем JSON для хранения массива изменений
+      allowNull: true,
+      defaultValue: [],
     },
   },
   {

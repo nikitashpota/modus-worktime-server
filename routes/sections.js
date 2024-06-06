@@ -1,5 +1,6 @@
 // server/routes/sections.js
 const express = require("express");
+const { parse, isValid, format } = require("date-fns");
 const router = express.Router();
 const Section = require("../models/Section");
 const UserSection = require("../models/UserSection");
@@ -78,25 +79,40 @@ router.post("/", async (req, res) => {
 
 // Добавление разделов по шаблону
 router.post("/loadTemplate", async (req, res) => {
-  const { stage, buildingId, sections } = req.body;
+  const { stage, buildingId, sections, action } = req.body;
 
   try {
-    // // Удалить связанные записи в usersections
-    // const sectionsToDelete = await Section.findAll({
-    //   where: { stage, buildingId },
-    //   attributes: ["id"],
-    // });
+    if (action === "delete") {
+      // Удалить все существующие разделы
+      const sectionsToDelete = await Section.findAll({
+        where: { stage, buildingId },
+        attributes: ["id"],
+      });
 
-    // await UserSection.destroy({
-    //   where: {
-    //     sectionId: sectionsToDelete.map((section) => section.id),
-    //   },
-    // });
+      await UserSection.destroy({
+        where: {
+          sectionId: sectionsToDelete.map((section) => section.id),
+        },
+      });
 
-    // // Теперь можно безопасно удалять разделы
-    // await Section.destroy({ where: { stage, buildingId } });
+      await Section.destroy({ where: { stage, buildingId } });
+    }
 
     for (let section of sections) {
+      if (action === "overwrite") {
+        const existingSection = await Section.findOne({
+          where: { stage, buildingId, sectionCode: section.sectionCode },
+        });
+
+        if (existingSection) {
+          existingSection.startDate = section.startDate;
+          existingSection.endDate = section.endDate;
+          existingSection.modifications = section.modifications;
+          await existingSection.save();
+          continue;
+        }
+      }
+
       await Section.create({ ...section, stage, buildingId });
     }
 
@@ -105,7 +121,31 @@ router.post("/loadTemplate", async (req, res) => {
     res.status(500).send("Ошибка при загрузке шаблона: " + error.message);
   }
 });
+// Добавление изменений
+router.post("/:id/add-modification", async (req, res) => {
+  try {
+    const section = await Section.findByPk(req.params.id);
+    if (!section) {
+      return res.status(404).send("Раздел не найден");
+    }
 
+    const { date } = req.body;
+    const modifications = section.modifications || [];
+    const newModification = {
+      number: modifications.length + 1,
+      date,
+    };
+
+    section.modifications = [...modifications, newModification];
+    await section.save();
+    res.json(section);
+  } catch (error) {
+    console.error("Ошибка при добавлении изменения:", error);
+    res.status(500).send("Ошибка сервера");
+  }
+});
+
+// Обновление раздела
 router.put("/:id", async (req, res) => {
   try {
     const section = await Section.findByPk(req.params.id);
@@ -113,6 +153,10 @@ router.put("/:id", async (req, res) => {
       return res.status(404).send("Раздел не найден");
     }
     Object.assign(section, req.body);
+    section.modifications = section.modifications.map((mod, index) => ({
+      ...mod,
+      number: index + 1,
+    }));
     await section.save();
     res.json(section);
   } catch (error) {
