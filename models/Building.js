@@ -5,23 +5,23 @@ const Building = sequelize.define(
   {
     technicalCustomer: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     initialContractValue: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     currentContractValue: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     number: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     name: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     description: {
       type: DataTypes.TEXT,
