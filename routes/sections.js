@@ -95,6 +95,12 @@ router.post("/loadTemplate", async (req, res) => {
         },
       });
 
+      await SectionSubcontractor.destroy({
+        where: {
+          sectionId: sectionsToDelete.map((section) => section.id),
+        },
+      });
+
       await Section.destroy({ where: { stage, buildingId } });
     }
 

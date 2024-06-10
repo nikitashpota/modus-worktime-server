@@ -6,29 +6,22 @@ const router = express.Router();
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const iconv = require("iconv-lite");
 
 const storage = multer.diskStorage({
-  destination: async function (req, file, cb) {
-    const milestone = await Milestone.findByPk(req.params.id);
-    const building = await Building.findByPk(milestone.buildingId);
-
-    const dir = `./uploads/${building.name}`;
-
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-
-    cb(null, dir);
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
   },
-  filename: function (req, file, cb) {
-    cb(
-      null,
-      file.fieldname + "-" + Date.now() + path.extname(file.originalname)
+  filename: (req, file, cb) => {
+    const decodedName = iconv.decode(
+      Buffer.from(file.originalname, "binary"),
+      "utf-8"
     );
+    cb(null, Date.now() + path.extname(decodedName));
   },
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({ storage });
 
 router.post(
   "/:id/attach-documents",
@@ -38,20 +31,18 @@ router.post(
     const files = req.files;
     let existingDocuments = JSON.parse(req.body.existingDocuments || "[]");
 
-    // Обработка путей для единообразия
-    existingDocuments = existingDocuments.map((doc) =>
-      doc.startsWith("uploads/") ? doc : `uploads/${doc}`
-    );
-
     try {
       const milestone = await Milestone.findByPk(id);
       if (!milestone) {
         return res.status(404).send("Milestone not found");
       }
 
-      // Добавление новых URL к существующим
-      const newUrls = files.map((file) => file.path.replace(/\\/g, "/"));
-      const documentUrls = existingDocuments.concat(newUrls);
+      const newDocuments = files.map((file) => ({
+        name: iconv.decode(Buffer.from(file.originalname, "binary"), "utf-8"),
+        url: file.path.replace(/\\/g, "/"),
+      }));
+
+      const documentUrls = existingDocuments.concat(newDocuments);
       milestone.documentUrls = JSON.stringify(documentUrls);
       await milestone.save();
 
@@ -74,12 +65,12 @@ router.post("/:id/remove-document", async (req, res) => {
     }
 
     const documentUrls = JSON.parse(milestone.documentUrls || "[]");
-    const filePathIndex = documentUrls.findIndex((url) =>
-      url.includes(fileName)
+    const filePathIndex = documentUrls.findIndex(
+      (doc) => doc.name === fileName
     );
 
     if (filePathIndex > -1) {
-      const filePath = documentUrls[filePathIndex];
+      const filePath = documentUrls[filePathIndex].url;
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
       }

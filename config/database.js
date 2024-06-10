@@ -4,7 +4,7 @@ const { Sequelize } = require("sequelize");
 const sequelize = new Sequelize("mdwork", "root", "12345Qwert!", {
   host: "localhost",
   dialect: "mysql",
-  logging: false,
+  logging: true,
 });
 
 module.exports = sequelize;
