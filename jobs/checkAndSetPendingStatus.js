@@ -8,7 +8,7 @@ const checkAndSetPendingStatus = async () => {
   try {
     const buildings = await Building.findAll();
     const now = new Date();
-    const fourDaysAgo = new Date(now.setDate(now.getDate() - 4));
+    const fourDaysAgo = new Date(now.setDate(now.getDate() - 7));
 
     for (const building of buildings) {
       const logs = await WorkTimeLog.findAll({
@@ -32,5 +32,5 @@ const checkAndSetPendingStatus = async () => {
   }
 };
 
-// Запланировать выполнение скрипта каждый день в полночь
-schedule.scheduleJob("0 0 * * *", checkAndSetPendingStatus);
+// Запускать каждые 10 секунд
+schedule.scheduleJob('*/10 * * * * *', checkAndSetPendingStatus);
