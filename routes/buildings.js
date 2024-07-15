@@ -13,8 +13,7 @@ const { Op } = require("sequelize");
 
 // Маршрут для создания ОКС
 router.post("/", async (req, res) => {
-  console.log(req.body);
-
+  // console.log(req.body);
   try {
     const { name, description, number } = req.body;
     if (!name) {
@@ -66,6 +65,27 @@ router.put("/:id", async (req, res) => {
   } catch (error) {
     console.error("Ошибка при обновлении здания:", error);
     res.status(500).send({ success: false, message: "Ошибка на сервере" });
+  }
+});
+
+// Обновление статуса здания
+router.put("/:id/status", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const building = await Building.findByPk(id);
+    if (!building) {
+      return res.status(404).send("Здание не найдено");
+    }
+
+    building.status = status;
+    await building.save();
+
+    res.send("Статус здания обновлен");
+  } catch (error) {
+    console.error("Ошибка при обновлении статуса здания:", error);
+    res.status(500).send("Ошибка сервера");
   }
 });
 

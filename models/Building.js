@@ -122,6 +122,11 @@ const Building = sequelize.define(
       allowNull: true,
       comment: "Стоимость объекта за м2",
     },
+    status: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      defaultValue: "active",
+    },
   },
   {
     timestamps: true,

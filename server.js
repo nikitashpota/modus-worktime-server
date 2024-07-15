@@ -34,6 +34,10 @@ app.use("/sections", sectionsRouter);
 app.use("/milestones", milestonesRouter);
 app.use("/subcontractors", subcontractorsRouter);
 
+
+// Импорт и запуск cron job
+require('./jobs/checkAndSetPendingStatus');
+
 sequelize
   .sync({ alter: true })
   .then(() => {
