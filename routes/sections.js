@@ -66,8 +66,8 @@ router.post("/", async (req, res) => {
     const section = await Section.create({
       sectionCode,
       sectionName,
-      startDate,
-      endDate,
+      startDate: startDate || null, // Устанавливаем null, если дата отсутствует
+      endDate: endDate || null, // Устанавливаем null, если дата отсутствует
       stage,
       buildingId,
     });

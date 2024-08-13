@@ -38,6 +38,11 @@ Section.init(
       allowNull: true,
       defaultValue: [],
     },
+    status: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: "Not Issued",
+    },
   },
   {
     sequelize,

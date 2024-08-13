@@ -25,6 +25,11 @@ const checkAndSetPendingStatus = async () => {
           building.status = "pending";
           await building.save();
         }
+      } else {
+        if (building.status !== "completed") {
+          building.status = "active";
+          await building.save();
+        }
       }
     }
   } catch (error) {
@@ -33,4 +38,4 @@ const checkAndSetPendingStatus = async () => {
 };
 
 // Запускать каждые 10 секунд
-schedule.scheduleJob('*/10 * * * * *', checkAndSetPendingStatus);
+schedule.scheduleJob("*/30 * * * * *", checkAndSetPendingStatus);
