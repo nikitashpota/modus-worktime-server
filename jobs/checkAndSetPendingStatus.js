@@ -38,4 +38,4 @@ const checkAndSetPendingStatus = async () => {
 };
 
 // Запускать каждые 10 секунд
-schedule.scheduleJob("*/30 * * * * *", checkAndSetPendingStatus);
+schedule.scheduleJob("* */30 * * * *", checkAndSetPendingStatus);

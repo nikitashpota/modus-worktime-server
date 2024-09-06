@@ -7,10 +7,10 @@ const WorkTimeLog = require("./models/WorkTimeLog");
 const Milestone = require("./models/Milestone");
 const Subcontractor = require("./models/Subcontractor");
 const SectionSubcontractor = require("./models/SectionSubcontractor");
+const Task = require("./models/Task");
+const TaskFile = require("./models/TaskFile");
 
 module.exports = function setupModelAssociations() {
-
-
   Subcontractor.hasMany(SectionSubcontractor, {
     foreignKey: "subcontractorId",
     as: "SectionSubcontractors",
@@ -110,4 +110,19 @@ module.exports = function setupModelAssociations() {
     foreignKey: "sectionId",
     onDelete: "CASCADE", // Указать каскадное удаление
   });
+
+  // Ассоциация с пользователем, который выдал задачу
+  Task.belongsTo(User, { as: "issuer", foreignKey: "issuerId" });
+
+  // Ассоциация с пользователем, который исполняет задачу
+  Task.belongsTo(User, { as: "receiver", foreignKey: "receiverId" });
+
+  // Ассоциация с разделом, к которому принадлежит задача
+  Task.belongsTo(Section, { foreignKey: "sectionId", as: "section" });
+
+  // Ассоциация с объектом, к которому принадлежит задача
+  Task.belongsTo(Building, { foreignKey: "buildingId", as: "building" });
+  
+  // Ассоциация с файлами задачи
+  Task.hasMany(TaskFile, { foreignKey: "taskId", as: "files" });
 };

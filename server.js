@@ -7,6 +7,7 @@ const workTimeLogsRouter = require("./routes/workTimeLogs");
 const sectionsRouter = require("./routes/sections");
 const milestonesRouter = require("./routes/milestones");
 const subcontractorsRouter = require("./routes/subcontractors");
+const taskRoutes = require("./routes/tasks");
 const setupModelAssociations = require("./associations");
 const sequelize = require("./config/database");
 const cors = require("cors");
@@ -33,13 +34,14 @@ app.use("/workTimeLogs", workTimeLogsRouter);
 app.use("/sections", sectionsRouter);
 app.use("/milestones", milestonesRouter);
 app.use("/subcontractors", subcontractorsRouter);
-
+app.use("/tasks", taskRoutes); // Подключаем маршруты к префиксу /tasks
 
 // Импорт и запуск cron job
-require('./jobs/checkAndSetPendingStatus');
+require("./jobs/checkAndSetPendingStatus");
 
 sequelize
   .sync({ alter: true })
+  // .sync({ force: true })
   .then(() => {
     console.log("DB is synchronized");
     app.listen(port, () => {

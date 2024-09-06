@@ -6,7 +6,6 @@ const Section = require("../models/Section");
 const UserSection = require("../models/UserSection");
 const UserBuilding = require("../models/UserBuilding");
 const SectionSubcontractor = require("../models/SectionSubcontractor");
-
 const User = require("../models/User");
 const Building = require("../models/Building");
 
@@ -23,6 +22,21 @@ router.get("/by-stage-building", async (req, res) => {
   }
 });
 
+
+// Получение разделов по зданию
+router.get("/by-building/:buildingId", async (req, res) => {
+  try {
+    const { buildingId } = req.params;
+    const sections = await Section.findAll({
+      where: { buildingId },
+    });
+    res.json(sections);
+  } catch (error) {
+    res.status(500).send(error.toString());
+  }
+});
+
+// Получение всех разделов
 router.get("/", async (req, res) => {
   try {
     const sections = await Section.findAll();
@@ -127,6 +141,7 @@ router.post("/loadTemplate", async (req, res) => {
     res.status(500).send("Ошибка при загрузке шаблона: " + error.message);
   }
 });
+
 // Добавление изменений
 router.post("/:id/add-modification", async (req, res) => {
   try {
@@ -188,7 +203,7 @@ router.get("/:sectionId/assigned-users", async (req, res) => {
   }
 });
 
-// Route to get the count of assigned users for a section
+// Получение количества пользователей, назначенных на раздел
 router.get("/:sectionId/assigned-users/count", async (req, res) => {
   try {
     const { sectionId } = req.params;
